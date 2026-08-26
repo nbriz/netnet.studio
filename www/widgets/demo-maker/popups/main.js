@@ -124,7 +124,10 @@ function newNoteList (demo = {}) {
     nn.get('#note-list').addStep(note)
   }
   // setup event listeners
-  nn.get('#note-list').on('selected', (e) => loadNote(e.detail.id))
+  nn.get('#note-list').on('selected', (e) => {
+    loadNote(e.detail.id)
+    closeNoteListModal()
+  })
   nn.get('#note-list').on('remove', (e) => deleteNote(e.detail.id))
   nn.get('#note-list').on('reordered', (e) => reorderNotes(e.detail))
   nn.get('#note-list').on('opened', async () => {
@@ -143,7 +146,6 @@ function loadNote (idx) {
   curNoteIdx = idx
   const note = DEMO.info[curNoteIdx] || {}
   nn.get('#note-title').value = note.title || ''
-  nn.get('#note-nums').value = note.focus ? note.focus.join(', ') : ''
   nn.get('#note-list').selectStep(curNoteIdx)
   ne.code = note.text || '...'
   MSG('demo-mkr-loaded-note', curNoteIdx)
@@ -172,6 +174,14 @@ function closeNotesList () {
   }
 }
 
+function openNoteListModal () {
+  nn.get('#note-list-modal').css({ display: 'flex' })
+}
+
+function closeNoteListModal () {
+  nn.get('#note-list-modal').css({ display: 'none' })
+}
+
 function deleteNote (idx) {
   if (DEMO.info.length < 2) return window.modal.open('need-one-note')
   // update DEMO.info array...
@@ -190,24 +200,44 @@ function updateNoteTitle () {
   updateWidget()
 }
 
-function updateNoteFocus () {
-  const note = DEMO.info[curNoteIdx]
-  let val = nn.get('#note-nums').value.trim()
-  const lastChar = val.slice(-1)
-  if (lastChar === ',') val = val.slice(0, -1)
-  if (val === '') note.focus = null
-  else {
-    note.focus = val.split(',').flatMap(f => {
-      if (f.includes('-')) {
-        const [start, end] = f.split('-').map(n => Number(n))
-        return Array.from({ length: end - start + 1 }, (_, i) => start + i)
-      } else {
-        return Number(f)
-      }
-    })
+function addFocusFromSelection () {
+  MSG('demo-mkr-get-selection', null)
+}
+
+function describeFocusItems (items) {
+  if (items.length === 1) {
+    const item = items[0]
+    return typeof item === 'object'
+      ? `added part of line ${item.line} to spotlight list`
+      : `added line ${item} to spotlight list`
   }
+  const allWholeLines = items.every(i => typeof i === 'number')
+  return allWholeLines
+    ? `added lines ${items.join(', ')} to spotlight list`
+    : `added ${items.length} selections to spotlight list`
+}
+
+let focusFeedbackTimeout
+function showFocusFeedback (msg) {
+  const el = nn.get('#note-focus-feedback')
+  clearTimeout(focusFeedbackTimeout)
+  el.style.transition = 'none'
+  el.textContent = msg
+  el.style.opacity = 1
+  focusFeedbackTimeout = setTimeout(() => {
+    el.style.transition = 'opacity 800ms ease'
+    el.style.opacity = 0
+  }, 3000)
+}
+
+function clearNoteFocus () {
+  const note = DEMO.info[curNoteIdx]
+  const hadFocus = note.focus && note.focus.length > 0
+  note.focus = null
   nn.get('#note-list').updateStep(note)
   updateWidget()
+  MSG('demo-mkr-spotlight', null)
+  showFocusFeedback(hadFocus ? 'cleared spotlight list' : 'spotlight list already empty')
 }
 
 // ----------------------------------------------------------------------- SETUP
@@ -231,6 +261,14 @@ nn.get('#new').on('click', newNote)
 
 nn.get('#preview').on('click', () => MSG('demo-mkr-preview', curNoteIdx))
 
+nn.get('#note-prev').on('click', () => loadNote(curNoteIdx - 1))
+
+nn.get('#note-next').on('click', () => loadNote(curNoteIdx + 1))
+
+nn.get('#note-view-all').on('click', openNoteListModal)
+
+nn.get('#note-list-modal-close').on('click', closeNoteListModal)
+
 nn.get('#delete').on('click', () => deleteNote(curNoteIdx))
 
 // ..................................................
@@ -238,8 +276,8 @@ nn.get('#delete').on('click', () => deleteNote(curNoteIdx))
 nn.get('#note-title').on('input', updateNoteTitle)
 nn.get('#note-title').on('focus', closeNotesList)
 
-nn.get('#note-nums').on('input', updateNoteFocus)
-nn.get('#note-nums').on('focus', closeNotesList)
+nn.get('#note-focus-add').on('click', addFocusFromSelection)
+nn.get('#note-focus-clear').on('click', clearNoteFocus)
 
 const ne = new Netitor({
   ele: '#note-info',
@@ -289,6 +327,19 @@ nn.on('message', (e) => {
     }
   } else if (type === 'generated-url') {
     window.modal.open('new-url', payload)
+  } else if (type === 'demo-mkr-selection') {
+    if (!payload || payload.length === 0) return
+    const note = DEMO.info[curNoteIdx]
+    if (!note.focus) note.focus = []
+    const added = []
+    payload.forEach(item => {
+      const exists = note.focus.some(f => JSON.stringify(f) === JSON.stringify(item))
+      if (!exists) { note.focus.push(item); added.push(item) }
+    })
+    nn.get('#note-list').updateStep(note)
+    updateWidget()
+    MSG('demo-mkr-spotlight', note.focus)
+    showFocusFeedback(added.length > 0 ? describeFocusItems(added) : 'already in spotlight list')
   }
 })
 

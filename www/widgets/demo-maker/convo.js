@@ -56,7 +56,7 @@ window.CONVOS['demo-maker'] = (self) => {
     }
   }, {
     id: 'focus-info',
-    content: 'You can specify ceratin lines of code to focus on when I share this note (all others will fade away momentarily). To do this list the line numbers of the code you want to spotlight in the focus field. These should be a comma separted list of line numbers, like <code>2, 4, 8</code> or ranges like <code>2-16, 32-64</code>. If no line numbers are specified in the focus input field, then all lines will be in focus.',
+    content: 'You can specify certain lines of code to focus on when I share this note (all others will fade away momentarily). To do this, select the lines (or even just part of a line) you want to spotlight in the main editor, then click <b>+ add selection</b>. You can add multiple selections to build up the spotlight, or click <b>clear</b> to remove them all and spotlight the whole note again.',
     options: {
       'got it!': (e) => e.hide()
     }

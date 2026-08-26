@@ -43,6 +43,10 @@ class DemoMaker extends Widget {
         this._messagePopup('demo-data', this.demo)
         this._messagePopup('demo-list', this.demos)
         this._loadData(this.demo)
+      } else if (e.data.type === 'demo-mkr-get-selection') {
+        this._messagePopup('demo-mkr-selection', this._getSelectionSpotlight())
+      } else if (e.data.type === 'demo-mkr-spotlight') {
+        NNE.spotlight(e.data.payload)
       } else if (e.data.type === 'demo-mkr-preview') {
         this._preview(e.data.payload)
       } else if (e.data.type === 'demo-mkr-loaded-note') {
@@ -104,6 +108,22 @@ class DemoMaker extends Widget {
   _resumeNewDemo () {
     this.demo = this._pendingDemo
     this._pendingDemo = null
+  }
+
+  _getSelectionSpotlight () {
+    const cm = NNE.cm
+    if (!cm.somethingSelected()) return [cm.getCursor().line + 1]
+    const items = []
+    cm.listSelections().forEach(range => {
+      const from = range.from()
+      const to = range.to()
+      if (from.line === to.line) {
+        items.push({ line: from.line + 1, startCol: from.ch, endCol: to.ch })
+      } else {
+        for (let n = from.line; n <= to.line; n++) items.push(n + 1)
+      }
+    })
+    return items
   }
 
   _loadData (demo) {
