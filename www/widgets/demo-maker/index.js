@@ -50,13 +50,24 @@ class DemoMaker extends Widget {
           this._preview(e.data.payload)
         }
       } else if (e.data.type === 'demo-mkr-update') {
-        if (!this.demo || !this.demo.key) {
-          if (NNW.layout === 'welcome') NNW.layout = 'dock-left'
-          utils.afterLayoutTransition(() => window.convo.hide())
-          NNE.code = ''
-        }
         const demo = JSON.parse(e.data.payload)
         demo.info = demo.info.map(o => { delete o.id; return o })
+        if (!this.demo || !this.demo.key) {
+          if (NNW.layout === 'welcome') NNW.layout = 'dock-left'
+          const hasCode = NNE.code !== '' && NNE.code !== utils.starterCode()
+          if (hasCode) {
+            this._pendingDemo = demo
+            this.convos = window.CONVOS[this.key](this)
+            window.convo = new Convo(this.convos, 'clear-code?')
+            return
+          }
+          utils.afterLayoutTransition(() => {
+            if (window.convo && window.convo.id !== 'clear-code?') {
+              window.convo.hide()
+            }
+          })
+          NNE.code = ''
+        }
         this.demo = demo
       } else if (e.data.type === 'demo-mkr-download') {
         this._downloadJSON()
@@ -88,6 +99,11 @@ class DemoMaker extends Widget {
   _messagePopup (type, payload) {
     if (!this.popup) return
     this.popup.postMessage({ type, payload }, window.origin)
+  }
+
+  _resumeNewDemo () {
+    this.demo = this._pendingDemo
+    this._pendingDemo = null
   }
 
   _loadData (demo) {

@@ -1,6 +1,21 @@
-/* global NNW */
+/* global NNW, NNE */
 window.CONVOS['demo-maker'] = (self) => {
   return [{
+    id: 'clear-code?',
+    before: () => NNW.menu.switchFace('default'),
+    content: 'It appears you\'ve got some code in the editor, do you want to keep it or should we clear it to start this new demo from scratch?',
+    options: {
+      'keep the code': (e) => {
+        self._resumeNewDemo()
+        e.hide()
+      },
+      'start from scratch': (e) => {
+        NNE.code = ''
+        self._resumeNewDemo()
+        e.hide()
+      }
+    }
+  }, {
     id: 'save-info',
     content: 'Clicking the <b>shareable link</b> button will create a URL you can use to share the annotated demo you made. Alternatively, if you\'d like to contribute this demo to our "<span class="link" onclick="WIDGETS.open(\'demo-sketches\')">Code Demos</span>" widget or simply download it for future editing click <b>download</b>.',
     options: {
