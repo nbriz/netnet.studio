@@ -42,15 +42,17 @@
 </div>
 
 <main style="opacity: 0.1">
-  <div>
+  <div class="note-header-row">
     <button id="preview" class="pill-btn pill-btn--secondary" title="preview this annotation">💬 Preview Note</button>
-    <input class="input" id="note-title" placeholder="note title">
+    <span class="note-title-wrap">
+      <input class="input" id="note-title" placeholder="note title">
+    </span>
     <span class="note-focus">
       <button class="pill-btn pill-btn--secondary" id="note-focus-add" title="spotlight whatever is currently selected in the editor">+ add selection</button>
       <button class="pill-btn pill-btn--secondary" id="note-focus-clear" title="clear this note's spotlight">clear</button>
-      <span id="note-focus-feedback"></span>
+      <button class="pill-btn pill-btn--secondary" id="note-focus-warn" title="this note's spotlight may need attention" hidden>⚠️</button>
     </span>
-    <button class="pill-btn pill-btn--secondary" name="note-info" style="float:right">?</button>
+    <button class="pill-btn pill-btn--secondary" name="note-info" style="margin-left:auto">?</button>
   </div>
   <div id="note-info"></div>
   <div class="note-nav-row">
@@ -65,6 +67,11 @@
     </button>
   </div>
 </main>
+
+<div id="note-info-bar" hidden>
+  <span id="note-info-bar-text"></span>
+  <button class="pill-btn pill-btn--secondary" id="note-info-bar-dismiss" hidden>dismiss warning</button>
+</div>
 
 <div id="modal">
   <div></div>

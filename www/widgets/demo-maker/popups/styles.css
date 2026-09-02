@@ -14,6 +14,9 @@ body {
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
 
 .menu {
   width: 100%;
@@ -49,20 +52,47 @@ main .input {
 
 main {
   background-color: var(--netizen-meta);
-  padding: 10px;
-}
-
-main::before {
-  content: "current note";
-  font-family: 'fira-sans-regular';
-  color: var(--bg-color);
-  transform: translate(10px, 5px);
-  display: inline-block;
+  padding: 18px 10px 10px 10px;
 }
 
 main > div {
   margin: 10px;
 }
+
+.note-header-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+#preview, .note-title-wrap, .note-focus {
+  position: relative;
+}
+
+/* main::before { */
+#preview::before,
+.note-title-wrap::before,
+.note-focus::before {
+  font-family: 'fira-sans-regular';
+  color: var(--bg-color);
+  top: -20px;
+  left: 0;
+  display: inline-block;
+  position: absolute;
+}
+
+#preview::before {
+  content: "current note";
+}
+
+.note-title-wrap::before {
+  content: "title";
+}
+
+.note-focus::before {
+  content: "code spotlight";
+}
+
 
 .note-focus {
   display: inline-flex;
@@ -82,11 +112,25 @@ main > div {
   gap: 2px;
 }
 
-#note-focus-feedback {
+#note-focus-warn {
+  color: #e0b400;
+  border-color: #e0b400;
+}
+
+#note-info-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 10px 10px;
+  padding: 10px;
+  color: var(--netizen-meta);
   font-family: 'fira-sans-mono', sans-serif;
   font-size: 0.85em;
-  color: var(--fg-color);
-  opacity: 0;
+}
+
+#note-info-bar-text {
+  flex: 1;
 }
 
 #note-info {
